@@ -2,222 +2,314 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=IM+Fell+English:ital@0;1&family=MedievalSharp&family=Tangerine:wght@700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
+    
     body {
-      width: 370px;
-      max-height: 530px;
+      width: 380px;
+      max-height: 560px;
       overflow-y: auto;
-      font: 13px/1.5 "Segoe UI", -apple-system, system-ui, sans-serif;
-      color: #fff;
+      font-family: 'IM Fell English', Georgia, serif;
+      color: #2c1a0e;
+      background: #1b120c url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+      padding: 12px;
       position: relative;
-      padding: 0;
     }
 
-    /* Colorful background with blobs so blur has something to frost over */
-    .bg {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: #0a0e27;
-      z-index: 0;
-      overflow: hidden;
-    }
-    .bg::before {
-      content: '';
-      position: absolute;
-      width: 250px; height: 250px;
-      background: radial-gradient(circle, rgba(99,102,241,0.7) 0%, transparent 70%);
-      top: -60px; left: -40px;
-      border-radius: 50%;
-    }
-    .bg::after {
-      content: '';
-      position: absolute;
-      width: 220px; height: 220px;
-      background: radial-gradient(circle, rgba(14,165,233,0.6) 0%, transparent 70%);
-      bottom: -40px; right: -30px;
-      border-radius: 50%;
-    }
-    .bg-blob3 {
-      position: absolute;
-      width: 180px; height: 180px;
-      background: radial-gradient(circle, rgba(168,85,247,0.5) 0%, transparent 70%);
-      top: 50%; left: 60%;
-      border-radius: 50%;
-      z-index: 0;
-    }
-
-    /* Content layer above blobs */
-    .content { position: relative; z-index: 1; padding: 0; }
-
-    /* GLASS MIXIN */
-    .glass {
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.15);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-    }
-
-    /* Header */
-    .toolbar {
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-    }
-    .toolbar-title { font-weight: 700; font-size: 15px; letter-spacing: -.3px; }
-    .toolbar-tag { font-size: 10px; color: rgba(255,255,255,0.4); }
-
-    .body-wrap { padding: 14px 16px; }
-
-    /* Scan button - glass */
-    #scanBtn {
-      width: 100%;
-      padding: 10px;
-      background: rgba(99,102,241,0.35);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      color: #fff;
-      border: 1px solid rgba(99,102,241,0.4);
-      border-radius: 12px;
-      font: 600 13px/1 inherit;
-      cursor: pointer;
-      transition: background .2s, transform .1s;
-    }
-    #scanBtn:hover:not(:disabled) {
-      background: rgba(99,102,241,0.5);
-      transform: translateY(-1px);
-    }
-    #scanBtn:active:not(:disabled) { transform: translateY(0); }
-    #scanBtn:disabled { opacity: .45; cursor: default; }
-
-    #status { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 10px; min-height: 16px; }
-
-    /* Verdict - glass */
-    .verdict-strip {
-      margin-top: 10px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
+    /* Top Header Bar - Parchment Header Banner */
+    .header-banner {
+      background: #e8d8b7 url('https://www.transparenttextures.com/patterns/aged-paper.png');
+      border: 2px solid #5a3e2b;
+      border-radius: 4px;
+      padding: 8px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 0 10px rgba(90,62,43,0.3);
+      margin-bottom: 12px;
     }
-    .verdict-strip.critical { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-    .verdict-strip.high { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3); color: #fdba74; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-    .verdict-strip.moderate { background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.3); color: #fde047; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-    .verdict-strip.low, .verdict-strip.safe { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #86efac; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-    .verdict-sub { font-weight: 400; font-size: 11px; opacity: .7; }
 
-    /* Section label */
-    .sec-head {
-      margin-top: 16px;
-      margin-bottom: 8px;
-      font-size: 10px;
+    .brand-title {
+      font-family: 'Cinzel', serif;
       font-weight: 700;
-      color: rgba(255,255,255,0.45);
-      text-transform: uppercase;
-      letter-spacing: .6px;
+      font-size: 16px;
+      color: #3b1e08;
+      letter-spacing: 0.5px;
+      text-shadow: 1px 1px 0px rgba(255,255,255,0.4);
+    }
+
+    .brand-sub {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 11px;
+      color: #6b4c35;
+    }
+
+    /* Control Desk Bar */
+    .control-desk {
       display: flex;
       align-items: center;
-      gap: 6px;
-    }
-    .sec-count {
-      background: rgba(255,255,255,0.12);
-      font-size: 10px;
-      padding: 1px 7px;
+      gap: 12px;
+      margin-bottom: 12px;
+      background: rgba(35, 21, 12, 0.85);
+      border: 1px solid #4a3222;
+      padding: 8px 12px;
       border-radius: 6px;
-      font-weight: 600;
-      color: #fff;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
     }
 
-    /* Finding cards - glass */
-    .finding {
-      background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 10px 12px;
-      margin-bottom: 8px;
-      border-left: 3px solid rgba(255,255,255,0.12);
-    }
-    .finding.f-critical { border-left-color: #ef4444; }
-    .finding.f-high { border-left-color: #f97316; }
-    .finding.f-medium { border-left-color: #eab308; }
-    .finding.f-low { border-left-color: #22c55e; }
-
-    .f-top { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
-    .f-sev {
+    /* Wax Seal Button */
+    .wax-seal-btn {
+      width: 54px;
+      height: 54px;
+      background: radial-gradient(circle at 35% 35%, #b91c1c 0%, #7f1d1d 70%, #450a0a 100%);
+      border-radius: 50%;
+      border: 2px solid #fca5a5;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.4), inset 0 -3px 6px rgba(0,0,0,0.8);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fef2f2;
+      font-family: 'Cinzel', serif;
       font-size: 9px;
       font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      letter-spacing: .3px;
+      text-align: center;
+      line-height: 1.1;
+      transition: transform 0.15s ease, filter 0.15s ease;
+      flex-shrink: 0;
     }
-    .f-sev.s-critical { background: rgba(239,68,68,0.2); color: #fca5a5; }
-    .f-sev.s-high { background: rgba(249,115,22,0.2); color: #fdba74; }
-    .f-sev.s-medium { background: rgba(234,179,8,0.2); color: #fde047; }
 
-    .f-name { font-weight: 600; font-size: 12px; }
-    .f-impact { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
-    .f-quote {
-      font-size: 10px;
-      color: rgba(255,255,255,0.35);
+    .wax-seal-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+      filter: brightness(1.15);
+    }
+
+    .wax-seal-btn:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    .wax-seal-btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .wax-seal-icon {
+      font-size: 14px;
+      margin-bottom: 1px;
+    }
+
+    .control-text {
+      flex-grow: 1;
+    }
+
+    #status {
+      font-size: 11px;
       font-style: italic;
-      margin-top: 4px;
-      padding: 4px 8px;
-      background: rgba(0,0,0,0.2);
+      color: #d7ccc8;
+      line-height: 1.3;
+    }
+
+    /* Main Scroll / Ledger Journal Container */
+    .parchment-ledger {
+      background: #f4ea6a url('https://www.transparenttextures.com/patterns/aged-paper.png');
+      background-color: #f2e3c6;
+      border: 3px solid #6e472b;
       border-radius: 6px;
+      padding: 14px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.7), inset 0 0 20px rgba(110,71,43,0.3);
+      position: relative;
+    }
+
+    /* Verdict Crest Plaque */
+    .verdict-plaque {
+      text-align: center;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 14px;
+      font-family: 'Cinzel', serif;
+      border: 2px solid #5a3e2b;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.3);
+      position: relative;
+    }
+
+    .verdict-plaque.critical {
+      background: linear-gradient(180deg, #991b1b 0%, #7f1d1d 100%);
+      color: #fef2f2;
+      border-color: #fca5a5;
+    }
+
+    .verdict-plaque.high {
+      background: linear-gradient(180deg, #c2410c 0%, #9a3412 100%);
+      color: #fff7ed;
+      border-color: #fdba74;
+    }
+
+    .verdict-plaque.moderate {
+      background: linear-gradient(180deg, #b45309 0%, #854d0e 100%);
+      color: #fefce8;
+      border-color: #fef08a;
+    }
+
+    .verdict-plaque.low, .verdict-plaque.safe {
+      background: linear-gradient(180deg, #15803d 0%, #166534 100%);
+      color: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+
+    .verdict-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    }
+
+    .verdict-sub {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    /* Section Divider */
+    .ledger-section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: #4a2e1b;
+      border-bottom: 1px solid #a68b6d;
+      padding-bottom: 3px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .finding-entry {
+      background: rgba(255, 255, 255, 0.45);
+      border: 1px solid #c9b499;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      position: relative;
+    }
+
+    .finding-entry-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    /* Small Wax Stamp Badge */
+    .wax-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      flex-shrink: 0;
+    }
+
+    .wax-badge.critical { background: #991b1b; border: 1px solid #fca5a5; }
+    .wax-badge.high { background: #c2410c; border: 1px solid #fdba74; }
+    .wax-badge.medium { background: #b45309; border: 1px solid #fef08a; }
+
+    .finding-title {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: #2b1704;
+    }
+
+    .finding-impact {
+      font-size: 11px;
+      color: #422917;
+      margin-bottom: 6px;
+      line-height: 1.35;
+    }
+
+    .finding-quote {
+      font-size: 10.5px;
+      font-style: italic;
+      color: #3b281c;
+      background: #e6d7b8;
+      border-left: 3px solid #8c6443;
+      padding: 6px 8px;
+      border-radius: 2px;
+      line-height: 1.35;
       word-break: break-word;
     }
 
-    .safe-msg { color: #86efac; font-size: 12px; padding: 10px 0; }
-
-    /* Tips - glass */
-    .tips-wrap {
-      margin-top: 14px;
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px;
-      padding: 10px 14px;
+    .tips-block {
+      background: rgba(230, 215, 184, 0.6);
+      border: 1px dashed #8c6443;
+      border-radius: 4px;
+      padding: 8px 10px;
+      margin-top: 12px;
     }
-    .tip-row { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 4px; padding-left: 12px; text-indent: -12px; }
 
-    .foot { font-size: 9px; color: rgba(255,255,255,0.2); text-align: center; margin-top: 16px; }
+    .tip-item {
+      font-size: 11px;
+      color: #3b2616;
+      margin-bottom: 4px;
+      line-height: 1.35;
+    }
+
+    .footer-stamp {
+      text-align: center;
+      font-size: 9px;
+      font-style: italic;
+      color: #7a5c43;
+      margin-top: 10px;
+    }
 
     ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+    ::-webkit-scrollbar-track { background: #1b120c; }
+    ::-webkit-scrollbar-thumb { background: #6e472b; border-radius: 2px; }
   </style>
 </head>
 <body>
-  <!-- Colored background blobs for the glass to frost over -->
-  <div class="bg"><div class="bg-blob3"></div></div>
 
-  <div class="content">
-    <div class="toolbar">
-      <span class="toolbar-title">Privacy Auditor</span>
-      <span class="toolbar-tag">Local Scan</span>
+  <!-- Top Parchment Header -->
+  <div class="header-banner">
+    <div>
+      <div class="brand-title">Privacy Auditor</div>
+      <div class="brand-sub">Local Parchment Ledger</div>
     </div>
-    <div class="body-wrap">
-      <button id="scanBtn">Scan This Page</button>
-      <div id="status"></div>
-      <div id="verdictBox"></div>
-      <div id="riskList"></div>
-      <div id="tipsBox"></div>
-      <div id="disclaimer"></div>
+    <div style="font-size: 18px;">📜</div>
+  </div>
+
+  <!-- Wooden Desk Controls -->
+  <div class="control-desk">
+    <button id="scanBtn" class="wax-seal-btn">
+      <span class="wax-seal-icon">🔍</span>
+      <span>SCAN</span>
+    </button>
+    <div class="control-text">
+      <div id="status">Press the wax seal to audit this page terms...</div>
     </div>
   </div>
+
+  <!-- Aged Parchment Ledger -->
+  <div class="parchment-ledger">
+    <div id="verdictBox"></div>
+    <div id="riskList"></div>
+    <div id="tipsBox"></div>
+    <div id="disclaimer"></div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

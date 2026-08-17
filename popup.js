@@ -6,9 +6,8 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
   const tipsBoxEl = document.getElementById('tipsBox');
   const disclaimerEl = document.getElementById('disclaimer');
 
-  btn.textContent = 'Scanning…';
   btn.disabled = true;
-  statusEl.textContent = 'Reading page content…';
+  statusEl.textContent = 'Unrolling page scroll…';
   riskListEl.innerHTML = '';
   verdictBoxEl.innerHTML = '';
   tipsBoxEl.innerHTML = '';
@@ -21,55 +20,56 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
       chrome.tabs.sendMessage(tab.id, { action: "EXTRACT_TEXT" }, (response) => {
         if (chrome.runtime.lastError || !response || !response.text) {
           reset();
-          statusEl.textContent = 'Could not read this page.';
+          statusEl.textContent = 'Could not inspect page text.';
           return;
         }
-        statusEl.textContent = 'Analyzing policy…';
+        statusEl.textContent = 'Auditing scroll entries…';
         chrome.runtime.sendMessage({ action: "ANALYZE_POLICY", text: response.text }, (a) => {
           reset();
-          if (chrome.runtime.lastError || !a) { statusEl.textContent = 'Analysis failed.'; return; }
+          if (chrome.runtime.lastError || !a) { statusEl.textContent = 'Audit interrupted.'; return; }
 
-          statusEl.textContent = a.methodUsed + ' · ' + a.risks.length + ' issue' + (a.risks.length !== 1 ? 's' : '') + ' found';
+          statusEl.textContent = a.methodUsed + ' · ' + a.risks.length + ' threat' + (a.risks.length !== 1 ? 's' : '') + ' cataloged';
 
-          // Verdict
+          // Verdict Plaque
           if (a.verdict) {
             const v = a.verdict;
             verdictBoxEl.innerHTML =
-              '<div class="verdict-strip ' + v.cssClass + '">' +
-                '<span>' + v.rating + '</span>' +
-                '<span class="verdict-sub">' + (v.worthIt ? 'Use with caution' : 'Not recommended') + '</span>' +
+              '<div class="verdict-plaque ' + v.cssClass + '">' +
+                '<div class="verdict-title">' + v.rating + '</div>' +
+                '<div class="verdict-sub">' + (v.worthIt ? 'Acceptable with Caution' : 'High Concern / Not Recommended') + '</div>' +
               '</div>';
           }
 
           // Findings
           if (a.risks && a.risks.length > 0) {
-            let html = '<div class="sec-head">Findings <span class="sec-count">' + a.risks.length + '</span></div>';
+            let html = '<div class="ledger-section-title"><span>Cataloged Threats</span> <span>' + a.risks.length + '</span></div>';
             a.risks.forEach(r => {
               const sev = (r.severity || 'MEDIUM').toLowerCase();
+              const badgeLetter = sev === 'critical' ? 'CR' : (sev === 'high' ? 'HI' : 'MD');
               html +=
-                '<div class="finding f-' + sev + '">' +
-                  '<div class="f-top">' +
-                    '<span class="f-sev s-' + sev + '">' + esc(r.severity) + '</span>' +
-                    '<span class="f-name">' + esc(r.title) + '</span>' +
+                '<div class="finding-entry">' +
+                  '<div class="finding-entry-top">' +
+                    '<div class="wax-badge ' + sev + '">' + badgeLetter + '</div>' +
+                    '<div class="finding-title">' + esc(r.title) + '</div>' +
                   '</div>' +
-                  (r.impact ? '<div class="f-impact">' + esc(r.impact) + '</div>' : '') +
-                  (r.quote ? '<div class="f-quote">"' + esc(r.quote) + '"</div>' : '') +
+                  (r.impact ? '<div class="finding-impact">' + esc(r.impact) + '</div>' : '') +
+                  (r.quote ? '<div class="finding-quote">"' + esc(r.quote) + '"</div>' : '') +
                 '</div>';
             });
             riskListEl.innerHTML = html;
           } else {
-            riskListEl.innerHTML = '<div class="safe-msg">✓ No privacy issues detected on this page.</div>';
+            riskListEl.innerHTML = '<div style="color: #15803d; font-family: \'Cinzel\', serif; font-size: 12px; font-weight: 700; text-align: center; padding: 10px 0;">📜 No Privacy Red Flags Discovered.</div>';
           }
 
           // Tips
           if (a.tips && a.tips.length > 0) {
-            let t = '<div class="tips-wrap"><div class="sec-head">Recommended Actions</div>';
-            a.tips.forEach(tip => { t += '<div class="tip-row">· ' + esc(tip) + '</div>'; });
+            let t = '<div class="tips-block"><div class="ledger-section-title" style="border:none; margin-bottom: 4px;">Recommended Measures</div>';
+            a.tips.forEach(tip => { t += '<div class="tip-item">✒️ ' + esc(tip) + '</div>'; });
             t += '</div>';
             tipsBoxEl.innerHTML = t;
           }
 
-          disclaimerEl.innerHTML = '<div class="foot">For informational purposes only. Not legal advice.</div>';
+          disclaimerEl.innerHTML = '<div class="footer-stamp">Authentic Local Ledger Audit · Informational Purpose Only</div>';
 
           // Highlight on page
           if (a.matchedPatterns && a.matchedPatterns.length > 0) {
@@ -80,6 +80,6 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
     }, 200);
   });
 
-  function reset() { btn.textContent = 'Scan This Page'; btn.disabled = false; }
+  function reset() { btn.disabled = false; }
   function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 });

@@ -9,66 +9,75 @@
       max-height: 520px;
       overflow-y: auto;
       font: 13px/1.5 "Segoe UI", -apple-system, system-ui, sans-serif;
-      color: #333;
-      background: #f5f5f5;
+      color: #eef2f7;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      padding: 0;
     }
 
-    /* Header bar */
+    /* Glass header */
     .toolbar {
-      background: #1a3a5c;
-      color: #fff;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
       padding: 10px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .toolbar-title { font-weight: 600; font-size: 14px; }
-    .toolbar-tag { font-size: 10px; opacity: .65; }
+    .toolbar-title { font-weight: 600; font-size: 14px; color: #fff; }
+    .toolbar-tag { font-size: 10px; color: rgba(255,255,255,0.5); }
 
     .body-wrap { padding: 12px 14px; }
 
-    /* Scan button */
+    /* Scan button - glass */
     #scanBtn {
       width: 100%;
       padding: 9px;
-      background: #2a6cb6;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       color: #fff;
-      border: none;
-      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px;
       font: 600 13px/1 inherit;
       cursor: pointer;
+      transition: background .15s;
     }
-    #scanBtn:hover:not(:disabled) { background: #1f5a9a; }
-    #scanBtn:disabled { opacity: .55; cursor: default; }
+    #scanBtn:hover:not(:disabled) { background: rgba(255,255,255,0.2); }
+    #scanBtn:disabled { opacity: .5; cursor: default; }
 
     /* Status */
-    #status { font-size: 11px; color: #777; margin-top: 8px; min-height: 16px; }
+    #status { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px; min-height: 16px; }
 
-    /* Verdict strip */
+    /* Verdict - glass strip */
     .verdict-strip {
       margin-top: 10px;
-      padding: 8px 10px;
-      border-radius: 4px;
+      padding: 8px 12px;
+      border-radius: 8px;
       font-size: 12px;
       font-weight: 600;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.12);
     }
-    .verdict-strip.critical { background: #fde8e8; color: #b91c1c; }
-    .verdict-strip.high { background: #fff3e0; color: #c2410c; }
-    .verdict-strip.moderate { background: #fef9e7; color: #92400e; }
-    .verdict-strip.low { background: #e8f5e9; color: #1b5e20; }
-    .verdict-strip.safe { background: #e8f5e9; color: #1b5e20; }
-    .verdict-sub { font-weight: 400; font-size: 11px; }
+    .verdict-strip.critical { background: rgba(220,38,38,0.2); color: #fca5a5; }
+    .verdict-strip.high { background: rgba(234,88,12,0.2); color: #fdba74; }
+    .verdict-strip.moderate { background: rgba(202,138,4,0.2); color: #fde047; }
+    .verdict-strip.low { background: rgba(22,163,74,0.2); color: #86efac; }
+    .verdict-strip.safe { background: rgba(22,163,74,0.15); color: #86efac; }
+    .verdict-sub { font-weight: 400; font-size: 11px; opacity: .8; }
 
-    /* Section heading */
+    /* Section head */
     .sec-head {
       margin-top: 14px;
       margin-bottom: 6px;
       font-size: 11px;
       font-weight: 700;
-      color: #1a3a5c;
+      color: rgba(255,255,255,0.6);
       text-transform: uppercase;
       letter-spacing: .4px;
       display: flex;
@@ -76,69 +85,74 @@
       gap: 6px;
     }
     .sec-count {
-      background: #1a3a5c;
+      background: rgba(255,255,255,0.15);
       color: #fff;
       font-size: 10px;
       padding: 0 6px;
-      border-radius: 3px;
+      border-radius: 4px;
       font-weight: 600;
     }
 
-    /* Finding cards */
+    /* Finding cards - glass */
     .finding {
-      background: #fff;
-      border-radius: 4px;
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
       padding: 8px 10px;
       margin-bottom: 6px;
-      border-left: 3px solid #ccc;
+      border-left: 3px solid rgba(255,255,255,0.15);
     }
-    .finding.f-critical { border-left-color: #dc2626; }
-    .finding.f-high { border-left-color: #ea580c; }
-    .finding.f-medium { border-left-color: #ca8a04; }
+    .finding.f-critical { border-left-color: #ef4444; }
+    .finding.f-high { border-left-color: #f97316; }
+    .finding.f-medium { border-left-color: #eab308; }
 
-    .f-top {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 2px;
-    }
+    .f-top { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
     .f-sev {
       font-size: 10px;
       font-weight: 700;
       padding: 1px 5px;
-      border-radius: 2px;
+      border-radius: 3px;
       line-height: 1.4;
     }
-    .f-sev.s-critical { background: #fde8e8; color: #b91c1c; }
-    .f-sev.s-high { background: #fff3e0; color: #c2410c; }
-    .f-sev.s-medium { background: #fef9e7; color: #92400e; }
+    .f-sev.s-critical { background: rgba(239,68,68,0.2); color: #fca5a5; }
+    .f-sev.s-high { background: rgba(249,115,22,0.2); color: #fdba74; }
+    .f-sev.s-medium { background: rgba(234,179,8,0.2); color: #fde047; }
 
-    .f-name { font-weight: 600; font-size: 12px; color: #222; }
-    .f-impact { font-size: 11px; color: #555; margin-top: 1px; }
+    .f-name { font-weight: 600; font-size: 12px; color: #f0f4f8; }
+    .f-impact { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 1px; }
     .f-quote {
       font-size: 11px;
-      color: #777;
+      color: rgba(255,255,255,0.4);
       font-style: italic;
       margin-top: 3px;
       padding: 3px 6px;
-      background: #fafafa;
-      border: 1px solid #eee;
-      border-radius: 3px;
+      background: rgba(0,0,0,0.15);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 4px;
       word-break: break-word;
     }
 
-    /* Safe state */
-    .safe-msg { color: #1b5e20; font-size: 12px; padding: 8px 0; }
+    .safe-msg { color: #86efac; font-size: 12px; padding: 8px 0; }
 
-    /* Tips */
-    .tips-wrap { margin-top: 12px; }
-    .tip-row { font-size: 11px; color: #555; margin-bottom: 3px; padding-left: 10px; text-indent: -10px; }
+    /* Tips - glass */
+    .tips-wrap {
+      margin-top: 12px;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .tip-row { font-size: 11px; color: rgba(255,255,255,0.55); margin-bottom: 3px; padding-left: 10px; text-indent: -10px; }
 
     /* Footer */
-    .foot { font-size: 9px; color: #aaa; text-align: center; margin-top: 14px; padding-top: 8px; border-top: 1px solid #e5e5e5; }
+    .foot { font-size: 9px; color: rgba(255,255,255,0.25); text-align: center; margin-top: 14px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
 
     ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
   </style>
 </head>
 <body>

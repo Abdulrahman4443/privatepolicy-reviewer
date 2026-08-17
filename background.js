@@ -233,36 +233,48 @@ async function analyzePolicy(policyText) {
     let aiRisks = [];
     let methodUsed = "Regex Scanner";
 
-    // 1. Try Chrome's Built-in AI Prompt API
-    if (self.ai && self.ai.languageModel) {
-      const capabilities = await self.ai.languageModel.capabilities();
+    // Detect Chrome Built-in AI Prompt API across all browser versions & flags
+    const aiApi = typeof ai !== 'undefined' ? ai : (typeof self !== 'undefined' && self.ai) ? self.ai : (typeof window !== 'undefined' && window.ai) ? window.ai : null;
 
-      if (capabilities.available !== "no") {
-        const session = await self.ai.languageModel.create({
-          systemPrompt: "You are a privacy policy auditor. Read the policy text and list ONLY clauses that directly threaten the user's privacy or legal rights (data selling, forced arbitration, class action waivers, AI training, ad tracking, data retention after deletion, contact book access, GPS tracking, government disclosure, ownership transfer). For each, output one line: SEVERITY | Title | Quote from text. Severity is CRITICAL, HIGH, or MEDIUM."
-        });
+    if (aiApi && (aiApi.languageModel || aiApi.summarizer)) {
+      try {
+        let session = null;
 
-        const response = await session.prompt(policyText);
-        session.destroy();
+        if (aiApi.languageModel) {
+          const capabilities = await aiApi.languageModel.capabilities();
+          if (capabilities && capabilities.available !== "no") {
+            session = await aiApi.languageModel.create({
+              systemPrompt: "You are a privacy policy auditor. Read the policy text and list ONLY clauses that directly threaten the user's privacy or legal rights (data selling, forced arbitration, class action waivers, AI training, ad tracking, data retention after deletion, contact book access, GPS tracking, government disclosure, ownership transfer). For each, output one line: SEVERITY | Title | Quote from text. Severity is CRITICAL, HIGH, or MEDIUM."
+            });
+          }
+        }
 
-        aiRisks = response.split('\n')
-          .filter(line => line.trim().length > 0)
-          .map(line => {
-            const parts = line.split('|').map(p => p.trim());
-            if (parts.length >= 3) {
-              return { severity: parts[0], title: parts[1], impact: parts[2], quote: "" };
-            }
-            return { severity: "MEDIUM", title: line.trim(), impact: "", quote: "" };
-          });
-        methodUsed = "Chrome AI (Gemini Nano)";
+        if (session) {
+          const response = await session.prompt(policyText);
+          if (session.destroy) session.destroy();
+
+          aiRisks = response.split('\n')
+            .filter(line => line.trim().length > 0)
+            .map(line => {
+              const parts = line.split('|').map(p => p.trim());
+              if (parts.length >= 3) {
+                return { severity: parts[0], title: parts[1], impact: parts[2], quote: "" };
+              }
+              return { severity: "MEDIUM", title: line.trim(), impact: "", quote: "" };
+            });
+          methodUsed = "Chrome AI (Gemini Nano)";
+        }
+      } catch (aiErr) {
+        console.warn("Chrome AI prompt error, using regex scanner:", aiErr);
       }
     }
 
-    // 2. Always run regex scan (for highlighting + if AI unavailable)
+    // 2. Always run regex scan (for highlighting + if AI unavailable/downloading)
     const regexResult = fallbackRegexScan(policyText);
 
     const risks = aiRisks.length > 0 ? aiRisks : regexResult.risks;
     const matchedPatterns = regexResult.matchedPatterns;
+
 
     // Use whichever found more risks for verdict scoring
     const scoringRisks = regexResult.risks.length >= risks.length ? regexResult.risks : risks;

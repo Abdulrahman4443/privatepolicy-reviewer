@@ -4,169 +4,219 @@
   <meta charset="UTF-8">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      width: 360px;
-      max-height: 520px;
+      width: 370px;
+      max-height: 530px;
       overflow-y: auto;
       font: 13px/1.5 "Segoe UI", -apple-system, system-ui, sans-serif;
-      color: #eef2f7;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      position: relative;
       padding: 0;
     }
 
-    /* Glass header */
-    .toolbar {
+    /* Colorful background with blobs so blur has something to frost over */
+    .bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #0a0e27;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .bg::before {
+      content: '';
+      position: absolute;
+      width: 250px; height: 250px;
+      background: radial-gradient(circle, rgba(99,102,241,0.7) 0%, transparent 70%);
+      top: -60px; left: -40px;
+      border-radius: 50%;
+    }
+    .bg::after {
+      content: '';
+      position: absolute;
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(14,165,233,0.6) 0%, transparent 70%);
+      bottom: -40px; right: -30px;
+      border-radius: 50%;
+    }
+    .bg-blob3 {
+      position: absolute;
+      width: 180px; height: 180px;
+      background: radial-gradient(circle, rgba(168,85,247,0.5) 0%, transparent 70%);
+      top: 50%; left: 60%;
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    /* Content layer above blobs */
+    .content { position: relative; z-index: 1; padding: 0; }
+
+    /* GLASS MIXIN */
+    .glass {
       background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      padding: 10px 14px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    }
+
+    /* Header */
+    .toolbar {
+      padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
     }
-    .toolbar-title { font-weight: 600; font-size: 14px; color: #fff; }
-    .toolbar-tag { font-size: 10px; color: rgba(255,255,255,0.5); }
+    .toolbar-title { font-weight: 700; font-size: 15px; letter-spacing: -.3px; }
+    .toolbar-tag { font-size: 10px; color: rgba(255,255,255,0.4); }
 
-    .body-wrap { padding: 12px 14px; }
+    .body-wrap { padding: 14px 16px; }
 
     /* Scan button - glass */
     #scanBtn {
       width: 100%;
-      padding: 9px;
-      background: rgba(255,255,255,0.12);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      padding: 10px;
+      background: rgba(99,102,241,0.35);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       color: #fff;
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 8px;
+      border: 1px solid rgba(99,102,241,0.4);
+      border-radius: 12px;
       font: 600 13px/1 inherit;
       cursor: pointer;
-      transition: background .15s;
+      transition: background .2s, transform .1s;
     }
-    #scanBtn:hover:not(:disabled) { background: rgba(255,255,255,0.2); }
-    #scanBtn:disabled { opacity: .5; cursor: default; }
+    #scanBtn:hover:not(:disabled) {
+      background: rgba(99,102,241,0.5);
+      transform: translateY(-1px);
+    }
+    #scanBtn:active:not(:disabled) { transform: translateY(0); }
+    #scanBtn:disabled { opacity: .45; cursor: default; }
 
-    /* Status */
-    #status { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px; min-height: 16px; }
+    #status { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 10px; min-height: 16px; }
 
-    /* Verdict - glass strip */
+    /* Verdict - glass */
     .verdict-strip {
       margin-top: 10px;
-      padding: 8px 12px;
-      border-radius: 8px;
+      padding: 10px 14px;
+      border-radius: 12px;
       font-size: 12px;
       font-weight: 600;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.12);
     }
-    .verdict-strip.critical { background: rgba(220,38,38,0.2); color: #fca5a5; }
-    .verdict-strip.high { background: rgba(234,88,12,0.2); color: #fdba74; }
-    .verdict-strip.moderate { background: rgba(202,138,4,0.2); color: #fde047; }
-    .verdict-strip.low { background: rgba(22,163,74,0.2); color: #86efac; }
-    .verdict-strip.safe { background: rgba(22,163,74,0.15); color: #86efac; }
-    .verdict-sub { font-weight: 400; font-size: 11px; opacity: .8; }
+    .verdict-strip.critical { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    .verdict-strip.high { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3); color: #fdba74; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    .verdict-strip.moderate { background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.3); color: #fde047; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    .verdict-strip.low, .verdict-strip.safe { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #86efac; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    .verdict-sub { font-weight: 400; font-size: 11px; opacity: .7; }
 
-    /* Section head */
+    /* Section label */
     .sec-head {
-      margin-top: 14px;
-      margin-bottom: 6px;
-      font-size: 11px;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      font-size: 10px;
       font-weight: 700;
-      color: rgba(255,255,255,0.6);
+      color: rgba(255,255,255,0.45);
       text-transform: uppercase;
-      letter-spacing: .4px;
+      letter-spacing: .6px;
       display: flex;
       align-items: center;
       gap: 6px;
     }
     .sec-count {
-      background: rgba(255,255,255,0.15);
-      color: #fff;
+      background: rgba(255,255,255,0.12);
       font-size: 10px;
-      padding: 0 6px;
-      border-radius: 4px;
+      padding: 1px 7px;
+      border-radius: 6px;
       font-weight: 600;
+      color: #fff;
     }
 
     /* Finding cards - glass */
     .finding {
-      background: rgba(255,255,255,0.07);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      padding: 8px 10px;
-      margin-bottom: 6px;
-      border-left: 3px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-left: 3px solid rgba(255,255,255,0.12);
     }
     .finding.f-critical { border-left-color: #ef4444; }
     .finding.f-high { border-left-color: #f97316; }
     .finding.f-medium { border-left-color: #eab308; }
+    .finding.f-low { border-left-color: #22c55e; }
 
-    .f-top { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+    .f-top { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
     .f-sev {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
-      padding: 1px 5px;
-      border-radius: 3px;
-      line-height: 1.4;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: .3px;
     }
     .f-sev.s-critical { background: rgba(239,68,68,0.2); color: #fca5a5; }
     .f-sev.s-high { background: rgba(249,115,22,0.2); color: #fdba74; }
     .f-sev.s-medium { background: rgba(234,179,8,0.2); color: #fde047; }
 
-    .f-name { font-weight: 600; font-size: 12px; color: #f0f4f8; }
-    .f-impact { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 1px; }
+    .f-name { font-weight: 600; font-size: 12px; }
+    .f-impact { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
     .f-quote {
-      font-size: 11px;
-      color: rgba(255,255,255,0.4);
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
       font-style: italic;
-      margin-top: 3px;
-      padding: 3px 6px;
-      background: rgba(0,0,0,0.15);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 4px;
+      margin-top: 4px;
+      padding: 4px 8px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
       word-break: break-word;
     }
 
-    .safe-msg { color: #86efac; font-size: 12px; padding: 8px 0; }
+    .safe-msg { color: #86efac; font-size: 12px; padding: 10px 0; }
 
     /* Tips - glass */
     .tips-wrap {
-      margin-top: 12px;
+      margin-top: 14px;
       background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 8px;
-      padding: 10px 12px;
+      border-radius: 10px;
+      padding: 10px 14px;
     }
-    .tip-row { font-size: 11px; color: rgba(255,255,255,0.55); margin-bottom: 3px; padding-left: 10px; text-indent: -10px; }
+    .tip-row { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 4px; padding-left: 12px; text-indent: -12px; }
 
-    /* Footer */
-    .foot { font-size: 9px; color: rgba(255,255,255,0.25); text-align: center; margin-top: 14px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
+    .foot { font-size: 9px; color: rgba(255,255,255,0.2); text-align: center; margin-top: 16px; }
 
     ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
   </style>
 </head>
 <body>
-  <div class="toolbar">
-    <span class="toolbar-title">Privacy Auditor</span>
-    <span class="toolbar-tag">Local Scan</span>
-  </div>
-  <div class="body-wrap">
-    <button id="scanBtn">Scan This Page</button>
-    <div id="status"></div>
-    <div id="verdictBox"></div>
-    <div id="riskList"></div>
-    <div id="tipsBox"></div>
-    <div id="disclaimer"></div>
+  <!-- Colored background blobs for the glass to frost over -->
+  <div class="bg"><div class="bg-blob3"></div></div>
+
+  <div class="content">
+    <div class="toolbar">
+      <span class="toolbar-title">Privacy Auditor</span>
+      <span class="toolbar-tag">Local Scan</span>
+    </div>
+    <div class="body-wrap">
+      <button id="scanBtn">Scan This Page</button>
+      <div id="status"></div>
+      <div id="verdictBox"></div>
+      <div id="riskList"></div>
+      <div id="tipsBox"></div>
+      <div id="disclaimer"></div>
+    </div>
   </div>
   <script src="popup.js"></script>
 </body>

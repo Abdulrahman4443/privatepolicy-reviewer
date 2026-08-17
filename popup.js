@@ -6,10 +6,9 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
   const tipsBoxEl = document.getElementById('tipsBox');
   const disclaimerEl = document.getElementById('disclaimer');
 
-  // Reset & Loading
   btn.textContent = 'Scanning…';
   btn.disabled = true;
-  statusEl.textContent = 'Extracting page content…';
+  statusEl.textContent = 'Reading page…';
   riskListEl.innerHTML = '';
   verdictBoxEl.innerHTML = '';
   tipsBoxEl.innerHTML = '';
@@ -17,107 +16,60 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    files: ['content.js']
-  }, () => {
+  chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] }, () => {
     setTimeout(() => {
       chrome.tabs.sendMessage(tab.id, { action: "EXTRACT_TEXT" }, (response) => {
         if (chrome.runtime.lastError || !response || !response.text) {
-          resetButton();
-          statusEl.textContent = 'Unable to read page content.';
+          done();
+          statusEl.textContent = 'Could not read page.';
           return;
         }
+        statusEl.textContent = 'Analyzing…';
+        chrome.runtime.sendMessage({ action: "ANALYZE_POLICY", text: response.text }, (a) => {
+          done();
+          if (chrome.runtime.lastError || !a) { statusEl.textContent = 'Failed.'; return; }
 
-        statusEl.textContent = 'Analyzing privacy terms…';
+          statusEl.textContent = a.methodUsed + ' — ' + a.risks.length + ' issue' + (a.risks.length !== 1 ? 's' : '');
 
-        chrome.runtime.sendMessage({ action: "ANALYZE_POLICY", text: response.text }, (analysis) => {
-          resetButton();
-
-          if (chrome.runtime.lastError || !analysis) {
-            statusEl.textContent = 'Analysis failed.';
-            return;
+          if (a.verdict) {
+            verdictBoxEl.innerHTML = '<div class="v ' + a.verdict.cssClass + '">' +
+              '<b>' + a.verdict.rating + '</b> — ' +
+              (a.verdict.worthIt ? 'Acceptable with caution' : 'Not recommended') +
+              '</div>';
           }
 
-          statusEl.textContent = `${analysis.methodUsed} · ${analysis.risks.length} threats found`;
-
-          // --- Minimal Verdict Banner ---
-          if (analysis.verdict) {
-            const v = analysis.verdict;
-            verdictBoxEl.innerHTML = `
-              <div class="verdict-banner ${v.cssClass}">
-                <span>${v.rating}</span>
-                <span>${v.worthIt ? 'Acceptable with caution' : 'High concern'}</span>
-              </div>
-            `;
-          }
-
-          // --- Minimal Threat Rows ---
-          if (analysis.risks && analysis.risks.length > 0) {
-            const header = document.createElement('div');
-            header.className = 'threats-header';
-            header.textContent = `Identified Concerns (${analysis.risks.length})`;
-            riskListEl.appendChild(header);
-
-            analysis.risks.forEach((risk) => {
-              const sevLower = (risk.severity || 'medium').toLowerCase();
-              const row = document.createElement('div');
-              row.className = 'threat-row';
-
-              let html = `
-                <div class="threat-meta">
-                  <span class="threat-badge ${sevLower}">${risk.severity}</span>
-                  <span class="threat-name">${escapeHtml(risk.title)}</span>
-                </div>
-              `;
-
-              if (risk.impact) {
-                html += `<div class="threat-desc">${escapeHtml(risk.impact)}</div>`;
-              }
-              if (risk.quote) {
-                html += `<div class="threat-quote">"${escapeHtml(risk.quote)}"</div>`;
-              }
-
-              row.innerHTML = html;
-              riskListEl.appendChild(row);
+          if (a.risks.length > 0) {
+            let h = '<div class="section-label">Findings (' + a.risks.length + ')</div>';
+            a.risks.forEach(r => {
+              const s = (r.severity || 'MEDIUM').charAt(0).toLowerCase();
+              h += '<div class="item">' +
+                '<span class="sev ' + s + '">' + esc(r.severity) + '</span>' +
+                '<span class="item-title">' + esc(r.title) + '</span>' +
+                (r.impact ? '<div class="item-desc">' + esc(r.impact) + '</div>' : '') +
+                (r.quote ? '<div class="item-quote">"' + esc(r.quote) + '"</div>' : '') +
+                '</div>';
             });
+            riskListEl.innerHTML = h;
           } else {
-            riskListEl.innerHTML = `<div class="threat-row" style="color: #166534; font-size: 12px;">✓ No privacy threats detected.</div>`;
+            riskListEl.innerHTML = '<div class="item" style="color:#080">No issues found.</div>';
           }
 
-          // --- Minimal Tips ---
-          if (analysis.tips && analysis.tips.length > 0) {
-            let tipsHtml = `<div class="tips-box"><div class="tips-title">Recommended Actions</div>`;
-            analysis.tips.forEach(tip => {
-              tipsHtml += `<div class="tip-line">• ${escapeHtml(tip)}</div>`;
-            });
-            tipsHtml += `</div>`;
-            tipsBoxEl.innerHTML = tipsHtml;
+          if (a.tips && a.tips.length > 0) {
+            let t = '<div class="section-label">Actions</div>';
+            a.tips.forEach(tip => { t += '<div class="tip">· ' + esc(tip) + '</div>'; });
+            tipsBoxEl.innerHTML = t;
           }
 
-          // --- Minimal Disclaimer ---
-          disclaimerEl.innerHTML = `<div class="disclaimer">Quoted text is for informational reference.</div>`;
+          disclaimerEl.innerHTML = '<div class="foot">Informational only. Not legal advice.</div>';
 
-          // --- Webpage Highlighting ---
-          if (analysis.matchedPatterns && analysis.matchedPatterns.length > 0) {
-            chrome.tabs.sendMessage(tab.id, {
-              action: "HIGHLIGHT_RISKS",
-              patterns: analysis.matchedPatterns
-            });
+          if (a.matchedPatterns && a.matchedPatterns.length > 0) {
+            chrome.tabs.sendMessage(tab.id, { action: "HIGHLIGHT_RISKS", patterns: a.matchedPatterns });
           }
         });
       });
     }, 200);
   });
 
-  function resetButton() {
-    btn.textContent = 'Scan Policy';
-    btn.disabled = false;
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
+  function done() { btn.textContent = 'Scan'; btn.disabled = false; }
+  function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 });

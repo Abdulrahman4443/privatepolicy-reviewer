@@ -5,61 +5,155 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      width: 340px;
-      max-height: 500px;
+      width: 360px;
+      max-height: 520px;
       overflow-y: auto;
-      font: 12px/1.5 -apple-system, system-ui, "Segoe UI", sans-serif;
-      color: #222;
-      background: #fff;
-      padding: 12px;
+      font: 13px/1.5 "Segoe UI", -apple-system, system-ui, sans-serif;
+      color: #333;
+      background: #f5f5f5;
     }
-    .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .top b { font-size: 13px; }
-    .top small { color: #888; font-size: 10px; }
+
+    /* Header bar */
+    .toolbar {
+      background: #1a3a5c;
+      color: #fff;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .toolbar-title { font-weight: 600; font-size: 14px; }
+    .toolbar-tag { font-size: 10px; opacity: .65; }
+
+    .body-wrap { padding: 12px 14px; }
+
+    /* Scan button */
     #scanBtn {
       width: 100%;
-      padding: 7px;
-      background: #222;
+      padding: 9px;
+      background: #2a6cb6;
       color: #fff;
       border: none;
-      font: inherit;
-      font-weight: 500;
+      border-radius: 4px;
+      font: 600 13px/1 inherit;
       cursor: pointer;
     }
-    #scanBtn:hover:not(:disabled) { background: #444; }
-    #scanBtn:disabled { opacity: .5; cursor: default; }
-    #status { color: #888; font-size: 11px; margin-top: 10px; }
-    #verdictBox { margin-top: 8px; }
-    .v { font-size: 11px; padding: 6px 8px; border: 1px solid #ddd; }
-    .v.critical { border-color: #c00; color: #900; }
-    .v.high { border-color: #e60; color: #b40; }
-    .v.moderate { border-color: #a80; color: #860; }
-    .v.low { border-color: #080; color: #060; }
-    .v.safe { border-color: #ddd; color: #666; }
-    .section-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; margin: 12px 0 4px; }
-    .item { padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 11px; }
-    .item:last-child { border-bottom: none; }
-    .sev { font-size: 9px; font-weight: 700; margin-right: 4px; }
-    .sev.c { color: #c00; }
-    .sev.h { color: #e60; }
-    .sev.m { color: #a80; }
-    .item-title { font-weight: 600; }
-    .item-desc { color: #555; }
-    .item-quote { font-size: 10px; color: #888; font-family: monospace; margin-top: 2px; word-break: break-word; }
-    .tip { font-size: 11px; color: #555; margin: 2px 0; }
-    .foot { font-size: 9px; color: #bbb; text-align: center; margin-top: 12px; }
-    ::-webkit-scrollbar { width: 3px; }
-    ::-webkit-scrollbar-thumb { background: #ccc; }
+    #scanBtn:hover:not(:disabled) { background: #1f5a9a; }
+    #scanBtn:disabled { opacity: .55; cursor: default; }
+
+    /* Status */
+    #status { font-size: 11px; color: #777; margin-top: 8px; min-height: 16px; }
+
+    /* Verdict strip */
+    .verdict-strip {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .verdict-strip.critical { background: #fde8e8; color: #b91c1c; }
+    .verdict-strip.high { background: #fff3e0; color: #c2410c; }
+    .verdict-strip.moderate { background: #fef9e7; color: #92400e; }
+    .verdict-strip.low { background: #e8f5e9; color: #1b5e20; }
+    .verdict-strip.safe { background: #e8f5e9; color: #1b5e20; }
+    .verdict-sub { font-weight: 400; font-size: 11px; }
+
+    /* Section heading */
+    .sec-head {
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #1a3a5c;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sec-count {
+      background: #1a3a5c;
+      color: #fff;
+      font-size: 10px;
+      padding: 0 6px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    /* Finding cards */
+    .finding {
+      background: #fff;
+      border-radius: 4px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      border-left: 3px solid #ccc;
+    }
+    .finding.f-critical { border-left-color: #dc2626; }
+    .finding.f-high { border-left-color: #ea580c; }
+    .finding.f-medium { border-left-color: #ca8a04; }
+
+    .f-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .f-sev {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 2px;
+      line-height: 1.4;
+    }
+    .f-sev.s-critical { background: #fde8e8; color: #b91c1c; }
+    .f-sev.s-high { background: #fff3e0; color: #c2410c; }
+    .f-sev.s-medium { background: #fef9e7; color: #92400e; }
+
+    .f-name { font-weight: 600; font-size: 12px; color: #222; }
+    .f-impact { font-size: 11px; color: #555; margin-top: 1px; }
+    .f-quote {
+      font-size: 11px;
+      color: #777;
+      font-style: italic;
+      margin-top: 3px;
+      padding: 3px 6px;
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 3px;
+      word-break: break-word;
+    }
+
+    /* Safe state */
+    .safe-msg { color: #1b5e20; font-size: 12px; padding: 8px 0; }
+
+    /* Tips */
+    .tips-wrap { margin-top: 12px; }
+    .tip-row { font-size: 11px; color: #555; margin-bottom: 3px; padding-left: 10px; text-indent: -10px; }
+
+    /* Footer */
+    .foot { font-size: 9px; color: #aaa; text-align: center; margin-top: 14px; padding-top: 8px; border-top: 1px solid #e5e5e5; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
   </style>
 </head>
 <body>
-  <div class="top"><b>Privacy Auditor</b><small>v1.0</small></div>
-  <button id="scanBtn">Scan</button>
-  <div id="status"></div>
-  <div id="verdictBox"></div>
-  <div id="riskList"></div>
-  <div id="tipsBox"></div>
-  <div id="disclaimer"></div>
+  <div class="toolbar">
+    <span class="toolbar-title">Privacy Auditor</span>
+    <span class="toolbar-tag">Local Scan</span>
+  </div>
+  <div class="body-wrap">
+    <button id="scanBtn">Scan This Page</button>
+    <div id="status"></div>
+    <div id="verdictBox"></div>
+    <div id="riskList"></div>
+    <div id="tipsBox"></div>
+    <div id="disclaimer"></div>
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>

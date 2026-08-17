@@ -24,11 +24,15 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
           return;
         }
         statusEl.textContent = 'Auditing policy terms…';
-        chrome.runtime.sendMessage({ action: "ANALYZE_POLICY", text: response.text }, (a) => {
-          reset();
-          if (chrome.runtime.lastError || !a) { statusEl.textContent = 'Audit failed.'; return; }
 
-          statusEl.textContent = a.methodUsed + ' · ' + a.risks.length + ' threat' + (a.risks.length !== 1 ? 's' : '') + ' cataloged';
+        // 1. Try running Chrome AI directly on webpage context (where window.ai is fully exposed)
+        chrome.tabs.sendMessage(tab.id, { action: "RUN_CHROME_AI", text: response.text }, (aiResponse) => {
+          chrome.runtime.sendMessage({ action: "ANALYZE_POLICY", text: response.text, aiOutput: aiResponse }, (a) => {
+            reset();
+            if (chrome.runtime.lastError || !a) { statusEl.textContent = 'Audit failed.'; return; }
+
+            statusEl.textContent = a.methodUsed + ' · ' + a.risks.length + ' threat' + (a.risks.length !== 1 ? 's' : '') + ' cataloged';
+
 
           // Verdict Banner
           if (a.verdict) {

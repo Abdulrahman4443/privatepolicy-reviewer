@@ -4,9 +4,13 @@ if (!window._privacyAuditorInjected) {
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "EXTRACT_TEXT") {
-      // Increased limit to 50,000 chars so we don't miss content deep in long policies
       const pageText = document.body.innerText.substring(0, 50000);
       sendResponse({ text: pageText });
+    }
+
+    if (message.action === "RUN_CHROME_AI") {
+      runLocalChromeAI(message.text).then(sendResponse);
+      return true;
     }
 
     if (message.action === "HIGHLIGHT_RISKS") {
@@ -16,6 +20,26 @@ if (!window._privacyAuditorInjected) {
 
     return true;
   });
+}
+
+async function runLocalChromeAI(policyText) {
+  try {
+    const aiApi = typeof ai !== 'undefined' ? ai : (typeof window !== 'undefined' && window.ai) ? window.ai : null;
+    if (!aiApi || !aiApi.languageModel) return null;
+
+    const capabilities = await aiApi.languageModel.capabilities();
+    if (capabilities && capabilities.available !== "no") {
+      const session = await aiApi.languageModel.create({
+        systemPrompt: "You are a privacy policy auditor. List ONLY red flag clauses (data selling, AI training, forced arbitration, ad tracking). Format each line: SEVERITY | Title | Description."
+      });
+      const response = await session.prompt(policyText.substring(0, 15000));
+      if (session.destroy) session.destroy();
+      return response;
+    }
+  } catch (err) {
+    console.warn("Content script Chrome AI error:", err);
+  }
+  return null;
 }
 
 function highlightPatterns(patterns) {

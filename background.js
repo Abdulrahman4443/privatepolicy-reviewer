@@ -197,38 +197,52 @@ function generateTips(foundRisks) {
 }
 
 
-async function analyzePolicy(policyText) {
+async function analyzePolicy(policyText, aiOutput) {
   try {
     let aiRisks = [];
     let methodUsed = "Regex Engine";
 
-    const aiApi = typeof ai !== 'undefined' ? ai : (typeof self !== 'undefined' && self.ai) ? self.ai : (typeof window !== 'undefined' && window.ai) ? window.ai : null;
+    if (aiOutput && typeof aiOutput === 'string' && aiOutput.trim().length > 0) {
+      aiRisks = aiOutput.split('\n')
+        .filter(line => line.trim().length > 0)
+        .map(line => {
+          const parts = line.split('|').map(p => p.trim());
+          if (parts.length >= 3) return { severity: parts[0], title: parts[1], impact: parts[2], quote: "" };
+          return { severity: "MEDIUM", title: line.trim(), impact: "", quote: "" };
+        });
+      if (aiRisks.length > 0) {
+        methodUsed = "Chrome AI (Gemini Nano)";
+      }
+    }
 
-    if (aiApi && (aiApi.languageModel || aiApi.summarizer)) {
-      try {
-        let session = null;
-        if (aiApi.languageModel) {
-          const capabilities = await aiApi.languageModel.capabilities();
-          if (capabilities && capabilities.available !== "no") {
-            session = await aiApi.languageModel.create({
-              systemPrompt: "You are a privacy auditor. Read the policy and output ONLY threat clauses in format: SEVERITY | Title | Quote."
-            });
+    if (aiRisks.length === 0) {
+      const aiApi = typeof ai !== 'undefined' ? ai : (typeof self !== 'undefined' && self.ai) ? self.ai : (typeof window !== 'undefined' && window.ai) ? window.ai : null;
+      if (aiApi && (aiApi.languageModel || aiApi.summarizer)) {
+        try {
+          let session = null;
+          if (aiApi.languageModel) {
+            const capabilities = await aiApi.languageModel.capabilities();
+            if (capabilities && capabilities.available !== "no") {
+              session = await aiApi.languageModel.create({
+                systemPrompt: "You are a privacy auditor. Read the policy and output ONLY threat clauses in format: SEVERITY | Title | Quote."
+              });
+            }
           }
+          if (session) {
+            const response = await session.prompt(policyText.substring(0, 15000));
+            if (session.destroy) session.destroy();
+            aiRisks = response.split('\n')
+              .filter(line => line.trim().length > 0)
+              .map(line => {
+                const parts = line.split('|').map(p => p.trim());
+                if (parts.length >= 3) return { severity: parts[0], title: parts[1], impact: parts[2], quote: "" };
+                return { severity: "MEDIUM", title: line.trim(), impact: "", quote: "" };
+              });
+            if (aiRisks.length > 0) methodUsed = "Chrome AI (Gemini Nano)";
+          }
+        } catch (e) {
+          console.warn("AI unavailable, running regex engine:", e);
         }
-        if (session) {
-          const response = await session.prompt(policyText);
-          if (session.destroy) session.destroy();
-          aiRisks = response.split('\n')
-            .filter(line => line.trim().length > 0)
-            .map(line => {
-              const parts = line.split('|').map(p => p.trim());
-              if (parts.length >= 3) return { severity: parts[0], title: parts[1], impact: parts[2], quote: "" };
-              return { severity: "MEDIUM", title: line.trim(), impact: "", quote: "" };
-            });
-          methodUsed = "Chrome AI (Gemini Nano)";
-        }
-      } catch (e) {
-        console.warn("AI unavailable, running regex engine:", e);
       }
     }
 
@@ -251,7 +265,8 @@ async function analyzePolicy(policyText) {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "ANALYZE_POLICY") {
-    analyzePolicy(message.text).then(sendResponse);
+    analyzePolicy(message.text, message.aiOutput).then(sendResponse);
     return true;
   }
 });
+
